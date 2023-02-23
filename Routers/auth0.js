@@ -3,6 +3,7 @@ const express = require("express");
 const path = require('path');
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 //--------------------------------- Database and Collection Requiring 
 require("../Database_Connection/Database_1");
 const Collect1 = require("../Collection/collection_1");
@@ -61,9 +62,11 @@ router.post("/signin", async (req, res) => {
         if (!valid1) {
             res.status(401).send("Invalid Data");
         } else {
-            const ismatch = await bcrypt.compare(pass, valid1.pass);
+          const ismatch = await bcrypt.compare(pass, valid1.pass);
             if (ismatch) {
-                res.status(201).render("home");
+              res.status(201).render("home");
+              const token = await valid1.generateAuthToken();
+              console.log(token);
             } else {
                 res.status(400).send("Invalid Data")
             }

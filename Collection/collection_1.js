@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 // ------------------------------------- Schema 
 const Reg_Schema = new mongoose.Schema({
     username: {
@@ -41,14 +42,20 @@ const Reg_Schema = new mongoose.Schema({
         type: String,
         require: true,
         minLength: 5,
-        maxLength: 8
     },
     cpass: {
         type: String,
         require: true,
         minLength: 5,
-        maxLength: 8
-    }
+    },
+    tokens: [
+        {
+            token: {
+                type: String,
+                required : true
+           }
+       }
+    ]
 
 
 });
@@ -75,6 +82,17 @@ Reg_Schema.pre("updateOne", async function (next) {
     next();
 });
 
+Reg_Schema.methods.generateAuthToken = async function () {
+    try {
+        const token = jwt.sign({ _id: this._id }, process.env.SECURITY);
+        this.tokens = this.tokens.concat({ token: token });
+        await this.save();
+        return token;
+
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 // Reg_Schema.pre("updateOne", async function (next) {
 //     console.log("BCRYPT UPDATE PASSWORD CONNECTED....");
